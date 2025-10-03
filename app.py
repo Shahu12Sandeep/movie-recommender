@@ -5,6 +5,9 @@ import time
 import gdown
 import os
 
+# TMDB API key environment variable se load
+api_key = os.getenv("TMDB_API_KEY")
+
 file_id = "1YdKL4vNns4wY7wCNTsBVmcvHZs5CZxey"  # Tumhara Google Drive File ID
 url = f"https://drive.google.com/uc?id={file_id}"
 output = "similarity.pkl"
@@ -60,9 +63,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 def fetch_poster(movie_id):
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key=522de07951caa2d0e06014b60ea5d043&language=en-US"
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=en-US"
     alternate_poster = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_image_available_600_x_450.svg"
 
     for attempt in range(3):
@@ -89,7 +91,6 @@ def fetch_poster(movie_id):
             return alternate_poster
 
     return alternate_poster
-
 
 def recommend(movie):
     movie_index = movies[movies['title'] == movie].index[0]
@@ -129,4 +130,3 @@ if st.button('Recommend'):
                 """,
                 unsafe_allow_html=True
             )
-
