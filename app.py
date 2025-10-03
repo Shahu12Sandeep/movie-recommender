@@ -107,7 +107,12 @@ def recommend(movie):
 
 # Load data
 movies = pickle.load(open('movies.pkl','rb'))
-similarity = pickle.load(open('similarity.pkl','rb'))
+@st.cache_data
+def load_similarity():
+    return pickle.load(open('similarity.pkl','rb'))
+
+similarity = load_similarity()
+
 
 st.title("Movie Recommender System")
 
