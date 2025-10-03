@@ -2,6 +2,17 @@ import streamlit as st
 import pickle
 import requests
 import time 
+import gdown
+import os
+
+file_id = "1YdKL4vNns4wY7wCNTsBVmcvHZs5CZxey"  # Tumhara Google Drive File ID
+url = f"https://drive.google.com/uc?id={file_id}"
+output = "similarity.pkl"
+
+if not os.path.exists(output):  # Agar file pehle se nahi hai
+    print("Downloading large file from Google Drive...")
+    gdown.download(url, output, quiet=False)
+
 # Custom CSS for styling
 st.markdown(
     """
