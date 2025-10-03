@@ -8,60 +8,41 @@ import os
 # TMDB API key environment variable se load
 api_key = os.getenv("TMDB_API_KEY")
 
-file_id = "1YdKL4vNns4wY7wCNTsBVmcvHZs5CZxey"  # Tumhara Google Drive File ID
+# Google Drive file ID for similarity.pkl
+file_id = "1YdKL4vNns4wY7wCNTsBVmcvHZs5CZxey"
 url = f"https://drive.google.com/uc?id={file_id}"
 output = "similarity.pkl"
 
-if not os.path.exists(output):  # Agar file pehle se nahi hai
-    print("Downloading large file from Google Drive...")
+# Agar similarity.pkl pehle se nahi hai to download karo
+if not os.path.exists(output):
+    st.write("Downloading similarity.pkl from Google Drive...")
     gdown.download(url, output, quiet=False)
 
 # Custom CSS for styling
-st.markdown(
-    """
+st.markdown("""
     <style>
-    /* App background and text */
-    .stApp {
-        background-color: #141516;
-        color: white;
-    }
-
-    /* Full selectbox background like button */
+    .stApp { background-color: #141516; color: white; }
     div[role="combobox"] > div {
         background-color: #7a7c84 !important;
         border: 2px solid #7a7c84 !important;
         border-radius: 5px;
         color: white !important;
     }
-
-    /* Dropdown text color */
-    div[role="option"] {
-        color: black !important;
-    }
-
-    /* Default button style */
+    div[role="option"] { color: black !important; }
     button {
         background-color: #7a7c84 !important;
         color: white !important;
         border: 2px solid #7a7c84 !important;
         border-radius: 5px;
     }
-
-    /* Button click style */
     button:active {
         background-color: black !important;
         color: red !important;
         border: 2px solid red !important;
     }
-
-    /* All other text white */
-    p, h1, h2, h3, h4, h5, h6, label, span {
-        color: white !important;
-    }
+    p, h1, h2, h3, h4, h5, h6, label, span { color: white !important; }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 def fetch_poster(movie_id):
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=en-US"
@@ -69,22 +50,17 @@ def fetch_poster(movie_id):
 
     for attempt in range(3):
         try:
-            print(f"Fetching poster for movie ID: {movie_id} (Attempt {attempt+1})")
             response = requests.get(url, timeout=15)
             response.raise_for_status()
             data = response.json()
-            print("API Response received:", data.keys())  # Debug
 
             poster_path = data.get('poster_path')
-            print("Poster Path:", poster_path)  # Debug
-
             if poster_path and isinstance(poster_path, str):
                 return "https://image.tmdb.org/t/p/w500" + poster_path
             else:
                 return alternate_poster
 
         except requests.exceptions.RequestException as e:
-            print(f"Request failed: {e}")
             if attempt < 2:
                 time.sleep(2)
                 continue
@@ -105,19 +81,22 @@ def recommend(movie):
         recommended_movies_posters.append(fetch_poster(movie_id))
     return recommended_movies, recommended_movies_posters
 
-# Load data
+# Load movies.pkl
 movies = pickle.load(open('movies.pkl','rb'))
+
+# Load similarity.pkl with caching
 @st.cache_data
 def load_similarity():
-    return pickle.load(open('similarity.pkl','rb'))
+    with open(output, 'rb') as f:
+        return pickle.load(f)
 
 similarity = load_similarity()
 
-
+# Streamlit UI
 st.title("Movie Recommender System")
 
 selected_movie_name = st.selectbox(
-    'Your movie journey starts here .Find your next favorite movie!',
+    'Your movie journey starts here. Find your next favorite movie!',
     movies['title'].values
 )
 
@@ -126,12 +105,9 @@ if st.button('Recommend'):
     cols = st.columns(5)
     for idx, col in enumerate(cols):
         with col:
-            st.markdown(
-                f"""
+            st.markdown(f"""
                 <div style="text-align:center;">
                     <p style="color:white; font-weight:bold; font-size:16px;">{names[idx]}</p>
                     <img src="{posters[idx]}" style="width:100%; border-radius:10px;">
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+            """, unsafe_allow_html=True)
